@@ -1,1 +1,64 @@
- 
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des clients{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Gestion des clients</h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-table me-1"></i>
+                Liste des clients
+                <a href="{{ path('app_client_new') }}" class="btn btn-primary float-end">
+                    <i class="fas fa-plus"></i> Nouveau client
+                </a>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Raison sociale</th>
+                            <th>Gérant</th>
+                            <th>Téléphone</th>
+                            <th>Ville</th>
+                            <th>Pays</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for client in clients %}
+                        <tr>
+                            <td>{{ client.id }}</td>
+                            <td>{{ client.companyName }}</td>
+                            <td>{{ client.managerFirstName }} {{ client.managerLastName }}</td>
+                            <td>{{ client.phoneNumber }}</td>
+                            <td>{{ client.city }}</td>
+                            <td>{{ client.country }}</td>
+                            <td>
+                                <a href="{{ path('app_client_show', {'id': client.id}) }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_client_delete', {'id': client.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ client.id) }}">
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7">Aucun client trouvé</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

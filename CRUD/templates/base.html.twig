@@ -55,18 +55,39 @@
                                     Tableau de bord
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ app.request.get('_route') starts with 'app_client' ? 'active' : '' }}" href="{{ path('app_client_index') }}">
-                                    <i class="fas fa-fw fa-users me-2"></i>
-                                    Clients
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ app.request.get('_route') starts with 'app_invoice' ? 'active' : '' }}" href="{{ path('app_invoice_index') }}">
-                                    <i class="fas fa-fw fa-file-invoice me-2"></i>
-                                    Factures
-                                </a>
-                            </li>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <li class="nav-item">
+                                    <a class="nav-link {{ app.request.get('_route') starts with 'app_user' ? 'active' : '' }}" href="{{ path('app_user_index') }}">
+                                        <i class="fas fa-fw fa-user-cog me-2"></i>
+                                        Gestion des utilisateurs
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ app.request.get('_route') starts with 'app_client' ? 'active' : '' }}" href="{{ path('app_client_index') }}">
+                                        <i class="fas fa-fw fa-users me-2"></i>
+                                        Gestion des clients
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ app.request.get('_route') starts with 'app_invoice' ? 'active' : '' }}" href="{{ path('app_invoice_index') }}">
+                                        <i class="fas fa-fw fa-file-invoice me-2"></i>
+                                        Gestion des factures
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link {{ app.request.get('_route') starts with 'app_client' ? 'active' : '' }}" href="{{ path('app_client_index') }}">
+                                        <i class="fas fa-fw fa-users me-2"></i>
+                                        Mes clients
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ app.request.get('_route') starts with 'app_invoice' ? 'active' : '' }}" href="{{ path('app_invoice_index') }}">
+                                        <i class="fas fa-fw fa-file-invoice me-2"></i>
+                                        Mes factures
+                                    </a>
+                                </li>
+                            {% endif %}
                             <li class="nav-item mt-4">
                                 <a class="nav-link" href="{{ path('app_logout') }}">
                                     <i class="fas fa-fw fa-sign-out-alt me-2"></i>

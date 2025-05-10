@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Invoice;
 use App\Form\InvoiceType;
-use App\Repository\ClientRepository;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,31 +19,19 @@ class InvoiceController extends AbstractController
     #[Route('/', name: 'app_invoice_index', methods: ['GET'])]
     public function index(InvoiceRepository $invoiceRepository): Response
     {
+        $user = $this->getUser();
+        $invoices = $invoiceRepository->findByUser($user);
+
         return $this->render('invoice/index.html.twig', [
-            'invoices' => $invoiceRepository->findByUser($this->getUser()),
+            'invoices' => $invoices,
         ]);
     }
 
     #[Route('/new', name: 'app_invoice_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, ClientRepository $clientRepository): Response
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $invoice = new Invoice();
-        
-        // Si un client est spécifié dans l'URL, on le préremplit
-        if ($request->query->has('client')) {
-            $client = $clientRepository->findOneByIdAndUser(
-                $request->query->getInt('client'),
-                $this->getUser()
-            );
-            
-            if ($client) {
-                $invoice->setClient($client);
-            }
-        }
-
-        $form = $this->createForm(InvoiceType::class, $invoice, [
-            'user' => $this->getUser(),
-        ]);
+        $form = $this->createForm(InvoiceType::class, $invoice);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -64,11 +51,8 @@ class InvoiceController extends AbstractController
     #[Route('/{id}', name: 'app_invoice_show', methods: ['GET'])]
     public function show(Invoice $invoice): Response
     {
-        // Vérifier que l'utilisateur a le droit de voir cette facture
-        if ($invoice->getClient()->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette facture.');
-        }
-
+        $this->denyAccessUnlessGranted('view', $invoice);
+        
         return $this->render('invoice/show.html.twig', [
             'invoice' => $invoice,
         ]);
@@ -77,14 +61,9 @@ class InvoiceController extends AbstractController
     #[Route('/{id}/edit', name: 'app_invoice_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Invoice $invoice, EntityManagerInterface $entityManager): Response
     {
-        // Vérifier que l'utilisateur a le droit de modifier cette facture
-        if ($invoice->getClient()->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette facture.');
-        }
-
-        $form = $this->createForm(InvoiceType::class, $invoice, [
-            'user' => $this->getUser(),
-        ]);
+        $this->denyAccessUnlessGranted('edit', $invoice);
+        
+        $form = $this->createForm(InvoiceType::class, $invoice);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -103,15 +82,11 @@ class InvoiceController extends AbstractController
     #[Route('/{id}', name: 'app_invoice_delete', methods: ['POST'])]
     public function delete(Request $request, Invoice $invoice, EntityManagerInterface $entityManager): Response
     {
-        // Vérifier que l'utilisateur a le droit de supprimer cette facture
-        if ($invoice->getClient()->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette facture.');
-        }
-
+        $this->denyAccessUnlessGranted('delete', $invoice);
+        
         if ($this->isCsrfTokenValid('delete'.$invoice->getId(), $request->request->get('_token'))) {
             $entityManager->remove($invoice);
             $entityManager->flush();
-            
             $this->addFlash('success', 'La facture a été supprimée avec succès.');
         }
 
