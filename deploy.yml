@@ -1,0 +1,5 @@
+- name: Déployer l'application Symfony avec Docker Compose
+  hosts: local
+  tasks:
+    - name: Lancer docker-compose
+      command: docker-compose up -d --build
