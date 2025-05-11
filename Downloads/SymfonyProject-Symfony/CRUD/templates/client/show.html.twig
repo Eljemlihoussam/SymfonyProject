@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ client.companyName }} - CRM{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{{ client.companyName }}</h1>
+        <div>
+            <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i> Modifier
+            </a>
+            <a href="{{ path('app_client_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations du client</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Gérant</th>
+                                <td>{{ client.managerFirstName }} {{ client.managerLastName }}</td>
+                            </tr>
+                            <tr>
+                                <th>Téléphone</th>
+                                <td>{{ client.phoneNumber }}</td>
+                            </tr>
+                            <tr>
+                                <th>Adresse</th>
+                                <td>{{ client.address }}</td>
+                            </tr>
+                            <tr>
+                                <th>Ville</th>
+                                <td>{{ client.city }}</td>
+                            </tr>
+                            <tr>
+                                <th>Pays</th>
+                                <td>{{ client.country }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Factures</h5>
+                    <a href="{{ path('app_invoice_new', {'client': client.id}) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Nouvelle facture
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>N° Facture</th>
+                                    <th>Date</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in client.invoices %}
+                                    <tr>
+                                        <td>{{ invoice.invoiceNumber }}</td>
+                                        <td>{{ invoice.invoiceDate|date('d/m/Y') }}</td>
+                                        <td>{{ invoice.amount|number_format(2, ',', ' ') }} MAD</td>
+                                        <td>
+                                            {% if invoice.status == 'PAID' %}
+                                                <span class="badge bg-success">Payée</span>
+                                            {% elseif invoice.status == 'PARTIALLY_PAID' %}
+                                                <span class="badge bg-warning">Partiellement payée</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Non payée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ path('app_invoice_show', {'id': invoice.id}) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ path('app_invoice_edit', {'id': invoice.id}) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Aucune facture trouvée</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
