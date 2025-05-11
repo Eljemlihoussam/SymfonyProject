@@ -1,0 +1,6 @@
+- name: Déploiement local Symfony
+  hosts: local
+  tasks:
+    - name: Vérifier qu’Ansible fonctionne
+      debug:
+        msg: "Ansible fonctionne correctement dans le projet Symfony."
