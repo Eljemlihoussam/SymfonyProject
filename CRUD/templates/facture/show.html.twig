@@ -1,0 +1,144 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la facture{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Détails de la facture</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_facture_index') }}" class="d-none d-sm-inline-block btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+            </a>
+            <a href="{{ path('app_facture_edit', {'id': facture.id}) }}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
+            </a>
+            <form action="{{ path('app_facture_delete', {'id': facture.id}) }}" method="post" class="d-inline"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer la facture \"{{ facture.numero }}\" ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ facture.id) }}">
+                <button type="submit" class="btn btn-danger shadow-sm">
+                    <i class="fas fa-trash fa-sm text-white-50"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Informations de la facture -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de la facture</h6>
+                    <span class="badge bg-{{ facture.etat == 'payee' ? 'success' : (facture.etat == 'partielle' ? 'warning' : 'danger') }}">
+                        {% if facture.etat == 'payee' %}
+                            Payée
+                        {% elseif facture.etat == 'partielle' %}
+                            Partiellement payée
+                        {% else %}
+                            Non payée
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Numéro de facture
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ facture.numero }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Date d'émission
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ facture.date|date('d/m/Y') }}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Montant
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ facture.montant|number_format(2, ',', ' ') }} €</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                État
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if facture.etat == 'payee' %}
+                                    Payée
+                                {% elseif facture.etat == 'partielle' %}
+                                    Partiellement payée
+                                {% else %}
+                                    Non payée
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if facture.description %}
+                        <div class="mb-3">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Description
+                            </div>
+                            <div class="text-gray-800">{{ facture.description|nl2br }}</div>
+                        </div>
+                    {% endif %}
+                    {% if facture.note %}
+                        <div class="mb-0">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Note
+                            </div>
+                            <div class="text-gray-800">{{ facture.note|nl2br }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations du client -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du client</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h4 class="text-gray-800 mb-3">{{ facture.client.nom }}</h4>
+                        <div class="mb-3">
+                            <i class="fas fa-envelope me-2 text-gray-400"></i>
+                            <span class="text-gray-800">{{ facture.client.email }}</span>
+                        </div>
+                        {% if facture.client.telephone %}
+                            <div class="mb-3">
+                                <i class="fas fa-phone me-2 text-gray-400"></i>
+                                <span class="text-gray-800">{{ facture.client.telephone }}</span>
+                            </div>
+                        {% endif %}
+                        {% if facture.client.adresse %}
+                            <div class="mb-3">
+                                <i class="fas fa-map-marker-alt me-2 text-gray-400"></i>
+                                <span class="text-gray-800">{{ facture.client.adresse|nl2br }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <a href="{{ path('app_client_show', {'id': facture.client.id}) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye me-2"></i>Voir le client
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

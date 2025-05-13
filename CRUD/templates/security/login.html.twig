@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - CRM{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        .login-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 600;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+        .form-floating > .form-control {
+            padding: 1rem 0.75rem;
+            height: calc(3.5rem + 2px);
+            line-height: 1.25;
+        }
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            border: none;
+            padding: 0.75rem;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 1rem;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(78, 115, 223, 0.2);
+        }
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            animation: shake 0.5s ease-in-out;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 10;
+        }
+        .form-check {
+            margin: 1rem 0;
+        }
+        .form-check-input:checked {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+{% endblock %}
+
+{% block body_no_layout %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>Connexion</h1>
+        </div>
+        <div class="login-body">
+            {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_login_check') }}">
+                <div class="form-floating position-relative">
+                    <input type="text" value="{{ last_username }}" name="_username" id="inputUsername" class="form-control" placeholder="Nom d'utilisateur" required autofocus>
+                    <label for="inputUsername">Nom d'utilisateur</label>
+                </div>
+
+                <div class="form-floating position-relative">
+                    <input type="password" name="_password" id="inputPassword" class="form-control" placeholder="Mot de passe" required>
+                    <label for="inputPassword">Mot de passe</label>
+                    <span class="password-toggle" onclick="togglePassword()">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="remember_me" name="_remember_me" checked>
+                    <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button class="btn btn-primary btn-login" type="submit">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('inputPassword');
+            const icon = document.querySelector('.password-toggle i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Animation de chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const button = document.querySelector('.btn-login');
+                    if (button) {
+                        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connexion en cours...';
+                        button.disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %} 
