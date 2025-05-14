@@ -13,25 +13,23 @@ RUN apt-get update && apt-get install -y \
 # Installation des extensions PHP nécessaires à Symfony
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Installation de Composer depuis l'image officielle
+# Installer Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Définition du répertoire de travail
+# Définition du dossier de travail
 WORKDIR /var/www/html
 
-# Copie des fichiers du projet Symfony (ajustable si tu veux ignorer certains fichiers)
+# Copier les fichiers du projet
 COPY . .
 
-# Création des dossiers nécessaires pour Symfony
+# Installer les dépendances PHP sans exécuter les scripts auto (évite l'erreur symfony-cmd)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+
+# Créer les dossiers cache/log requis
 RUN mkdir -p var/cache var/log && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 755 var
 
-# Installation des dépendances PHP (tu peux retirer --no-scripts si tu veux exécuter les scripts post-install Symfony)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# Exposition du port utilisé par PHP-FPM
 EXPOSE 9000
 
-# Commande de démarrage
 CMD ["php-fpm"]
