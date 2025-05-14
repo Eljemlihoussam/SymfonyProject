@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'composer:2.7'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
@@ -19,9 +15,15 @@ pipeline {
         }
 
         stage('Install Dependencies') {
+            agent {
+                docker {
+                    image 'composer:2.7'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' // pour autoriser docker build dans d'autres étapes
+                }
+            }
             steps {
                 sh 'composer install --no-interaction --no-progress --prefer-dist'
-                sh 'php bin/console cache:clear'
+                sh 'php bin/console cache:clear || true'
             }
         }
 
@@ -79,10 +81,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed!'
         }
     }
 }
