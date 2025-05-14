@@ -2,7 +2,7 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
-# Installer Docker, PHP, extensions Symfony, Composer
+# Installer Docker, PHP, Composer et extensions nécessaires
 RUN apt-get update && apt-get install -y \
     docker.io \
     php \
@@ -18,8 +18,10 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     curl \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && groupadd docker \
-    && usermod -aG docker jenkins
+    apache2 \
+    libapache2-mod-php \
+ && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+ && groupadd -f docker \
+ && usermod -aG docker jenkins
 
 USER jenkins
