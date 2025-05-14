@@ -2,7 +2,9 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
-RUN apt-get update && apt-get install -y docker.io \
+# Installer docker et composer
+RUN apt-get update && apt-get install -y docker.io curl unzip php-cli php-mbstring git \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && usermod -aG docker jenkins
 
 USER jenkins
