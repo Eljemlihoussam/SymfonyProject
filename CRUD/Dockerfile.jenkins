@@ -2,7 +2,6 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
-# Installer Docker
 RUN apt-get update && apt-get install -y docker.io \
     && usermod -aG docker jenkins
 
