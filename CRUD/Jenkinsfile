@@ -4,16 +4,17 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
         DOCKER_TAG = "${BUILD_NUMBER}"
+        GIT_CREDENTIALS_ID = 'github-token'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout([$class: 'GitSCM',
-                    branches: [[name: "*/Symfony-factures"]],
+                    branches: [[name: '*/Symfony-factures']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/Eljemlihoussam/SymfonyProject.git',
-                        credentialsId: 'github-token'
+                        credentialsId: "${GIT_CREDENTIALS_ID}"
                     ]]
                 ])
             }
