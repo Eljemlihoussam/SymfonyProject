@@ -18,11 +18,11 @@ pipeline {
             agent {
                 docker {
                     image 'composer:2.7'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // pour autoriser docker build dans d'autres étapes
                 }
             }
             steps {
                 sh 'composer install --no-interaction --no-progress --prefer-dist'
+                sh 'php -v'
                 sh 'php bin/console cache:clear || true'
             }
         }
