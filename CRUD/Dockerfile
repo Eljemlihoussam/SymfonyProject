@@ -13,24 +13,22 @@ RUN apt-get update && apt-get install -y \
 # Installation des extensions PHP
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Installation de Composer depuis image officielle
+# Installation de Composer depuis l'image officielle
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Définition du répertoire de travail
 WORKDIR /var/www/html
 
-# Copie des fichiers du projet, y compris .env
+# Copie des fichiers du projet
 COPY . .
-
-# ✅ Vérifie que `.env` est bien copié (et pas ignoré)
-# Vérifie aussi que `.env` n’est PAS listé dans `.dockerignore`
 
 # Installation des dépendances PHP sans exécuter les scripts Symfony
 RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
 
-# Configuration des permissions
-RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html/var
+# Création des dossiers nécessaires si absents
+RUN mkdir -p var/cache var/log && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 var
 
 # Exposition du port PHP-FPM
 EXPOSE 9000
