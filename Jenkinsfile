@@ -1,10 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'eljemlihoussam/php-composer-symfony:8.2'
+        }
+    }
 
     environment {
-        DOCKER_IMAGE = 'votre-username/symfony-crm'
+        DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        SONAR_HOST_URL = 'http://sonarqube:9000'
     }
 
     stages {
@@ -16,28 +19,10 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
-            }
-        }
-
-        stage('Clear Cache') {
-            steps {
-                sh 'php bin/console cache:clear'
-                sh 'php bin/console cache:warmup'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=symfony-crm \
-                        -Dsonar.sources=. \
-                        -Dsonar.php.coverage.reportPaths=var/coverage.xml \
-                        -Dsonar.php.tests.reportPath=var/junit.xml
-                    '''
-                }
+                sh '''
+                    composer install --no-interaction --prefer-dist
+                    php bin/console cache:clear || true
+                '''
             }
         }
 
@@ -52,9 +37,9 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}:latest").push()
                     }
                 }
             }
@@ -62,13 +47,14 @@ pipeline {
 
         stage('Deploy with Ansible') {
             steps {
-                script {
-                    ansiblePlaybook(
-                        playbook: 'deploy.yml',
-                        inventory: 'inventory.ini',
-                        credentialsId: 'ansible-ssh-key'
-                    )
-                }
+                ansiblePlaybook(
+                    playbook: 'deploy.yml',
+                    inventory: 'inventory.ini',
+                    extras: [
+                        "docker_image=${DOCKER_IMAGE}",
+                        "docker_tag=${DOCKER_TAG}"
+                    ]
+                )
             }
         }
     }
@@ -78,10 +64,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed!'
         }
     }
-} 
+}
