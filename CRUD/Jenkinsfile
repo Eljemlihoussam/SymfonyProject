@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'eljemlihoussam/php-composer-symfony:8.2'
+            args '-u root'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
@@ -15,29 +20,60 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'composer install --no-interaction --prefer-dist || true'
-                sh 'php bin/console cache:clear || true'
+                dir('CRUD') {
+                    sh '''
+                        composer install --no-interaction --prefer-dist
+                        php bin/console cache:clear || true
+                    '''
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                    sh 'docker push ${DOCKER_IMAGE}:${DOCKER_TAG}'
+                script {
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "CRUD")
                 }
             }
         }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}:latest").push()
+                    }
+                }
+            }
+        }
+
+        // Décommente si tu veux déployer via Ansible
+        /*
+        stage('Deploy with Ansible') {
+            steps {
+                ansiblePlaybook(
+                    playbook: 'deploy.yml',
+                    inventory: 'inventory.ini',
+                    extras: [
+                        "docker_image=${DOCKER_IMAGE}",
+                        "docker_tag=${DOCKER_TAG}"
+                    ]
+                )
+            }
+        }
+        */
     }
 
     post {
         always {
             cleanWs()
+        }
+        success {
+            echo '✅ Pipeline completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed!'
         }
     }
 }
