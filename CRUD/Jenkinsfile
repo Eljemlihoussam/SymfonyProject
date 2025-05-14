@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'eljemlihoussam/php-composer-symfony:8.2'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
@@ -14,15 +18,9 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            agent {
-                docker {
-                    image 'composer:2.7'
-                }
-            }
             steps {
                 sh '''
-                    composer install --no-interaction --no-progress --prefer-dist
-                    php -v
+                    composer install --no-interaction --prefer-dist
                     php bin/console cache:clear || true
                 '''
             }
