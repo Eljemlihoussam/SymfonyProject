@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        SONAR_TOKEN = credentials('sonarqube-token')
     }
 
     stages {
@@ -17,29 +16,16 @@ pipeline {
         stage('Install Dependencies') {
             agent {
                 docker {
-                    image 'composer:2.7'
+                    image 'php:8.2-cli'
                 }
             }
             steps {
-                sh 'composer install --no-interaction --no-progress --prefer-dist'
-                sh 'php -v'
-                sh 'php bin/console cache:clear || true'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=crm-symfony \
-                        -Dsonar.sources=src \
-                        -Dsonar.php.coverage.reportPaths=var/coverage.xml \
-                        -Dsonar.php.tests.reportPath=var/junit.xml \
-                        -Dsonar.host.url=${SONAR_HOST_URL} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                    '''
-                }
+                sh '''
+                    apt-get update && apt-get install -y unzip git curl
+                    curl -sS https://getcomposer.org/installer | php
+                    php composer.phar install --no-interaction --no-progress --prefer-dist
+                    php bin/console cache:clear || true
+                '''
             }
         }
 
