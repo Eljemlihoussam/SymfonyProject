@@ -50,21 +50,23 @@ pipeline {
             }
         }
 
-        // Déploiement Ansible (décommenter si nécessaire)
-        /*
         stage('Deploy with Ansible') {
+            when {
+                expression { fileExists('deploy.yml') }
+            }
             steps {
-                ansiblePlaybook(
-                    playbook: 'deploy.yml',
-                    inventory: 'inventory.ini',
-                    extras: [
-                        "docker_image=${DOCKER_IMAGE}",
-                        "docker_tag=${DOCKER_TAG}"
-                    ]
-                )
+                dir('CRUD') {
+                    ansiblePlaybook(
+                        playbook: '../deploy.yml',
+                        inventory: '../inventory.ini',
+                        extras: [
+                            "docker_image=${DOCKER_IMAGE}",
+                            "docker_tag=${DOCKER_TAG}"
+                        ]
+                    )
+                }
             }
         }
-        */
     }
 
     post {

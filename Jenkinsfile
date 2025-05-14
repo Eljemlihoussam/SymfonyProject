@@ -2,6 +2,7 @@ pipeline {
     agent {
         docker {
             image 'eljemlihoussam/php-composer-symfony:8.2'
+            args '-u root'
         }
     }
 
@@ -19,17 +20,21 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    composer install --no-interaction --prefer-dist
-                    php bin/console cache:clear || true
-                '''
+                dir('CRUD') {
+                    sh '''
+                        composer install --no-interaction --prefer-dist
+                        php bin/console cache:clear || true
+                    '''
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                dir('CRUD') {
+                    script {
+                        docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    }
                 }
             }
         }
@@ -37,7 +42,7 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
                         docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
                         docker.image("${DOCKER_IMAGE}:latest").push()
                     }
@@ -46,15 +51,20 @@ pipeline {
         }
 
         stage('Deploy with Ansible') {
+            when {
+                expression { fileExists('deploy.yml') }
+            }
             steps {
-                ansiblePlaybook(
-                    playbook: 'deploy.yml',
-                    inventory: 'inventory.ini',
-                    extras: [
-                        "docker_image=${DOCKER_IMAGE}",
-                        "docker_tag=${DOCKER_TAG}"
-                    ]
-                )
+                dir('CRUD') {
+                    ansiblePlaybook(
+                        playbook: '../deploy.yml',
+                        inventory: '../inventory.ini',
+                        extras: [
+                            "docker_image=${DOCKER_IMAGE}",
+                            "docker_tag=${DOCKER_TAG}"
+                        ]
+                    )
+                }
             }
         }
     }
@@ -64,10 +74,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo '✅ Pipeline terminé avec succès !'
         }
         failure {
-            echo '❌ Pipeline failed!'
+            echo '❌ Pipeline échoué !'
         }
     }
 }
