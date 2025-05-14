@@ -16,14 +16,13 @@ pipeline {
         stage('Install Dependencies') {
             agent {
                 docker {
-                    image 'php:8.2-cli'
+                    image 'composer:2.7'
                 }
             }
             steps {
                 sh '''
-                    apt-get update && apt-get install -y unzip git curl
-                    curl -sS https://getcomposer.org/installer | php
-                    php composer.phar install --no-interaction --no-progress --prefer-dist
+                    composer install --no-interaction --no-progress --prefer-dist
+                    php -v
                     php bin/console cache:clear || true
                 '''
             }
