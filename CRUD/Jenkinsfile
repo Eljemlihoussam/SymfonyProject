@@ -7,6 +7,18 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: "*/Symfony-factures"]],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Eljemlihoussam/SymfonyProject.git',
+                        credentialsId: 'github-token'
+                    ]]
+                ])
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 dir('CRUD') {
