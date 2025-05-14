@@ -31,8 +31,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "CRUD")
+                dir('CRUD') {
+                    script {
+                        docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    }
                 }
             }
         }
@@ -48,7 +50,7 @@ pipeline {
             }
         }
 
-        // Décommente si tu veux déployer via Ansible
+        // Déploiement Ansible (décommenter si nécessaire)
         /*
         stage('Deploy with Ansible') {
             steps {
@@ -70,10 +72,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo '✅ Pipeline terminé avec succès !'
         }
         failure {
-            echo '❌ Pipeline failed!'
+            echo '❌ Pipeline échoué !'
         }
     }
 }
