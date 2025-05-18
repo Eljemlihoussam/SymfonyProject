@@ -1,0 +1,197 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du client{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Détails du client</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_client_index') }}" class="d-none d-sm-inline-block btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+            </a>
+            <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
+            </a>
+            <form action="{{ path('app_client_delete', {'id': client.id}) }}" method="post" class="d-inline"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer le client \"{{ client.nom }}\" ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ client.id) }}">
+                <button type="submit" class="btn btn-danger shadow-sm">
+                    <i class="fas fa-trash fa-sm text-white-50"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Informations du client -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du client</h6>
+                    <span class="badge bg-{{ client.isActive ? 'success' : 'danger' }}">
+                        {{ client.isActive ? 'Actif' : 'Inactif' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h4 class="text-gray-800 mb-3">{{ client.nom }}</h4>
+                        <div class="mb-3">
+                            <i class="fas fa-envelope me-2 text-gray-400"></i>
+                            <span class="text-gray-800">{{ client.email }}</span>
+                        </div>
+                        {% if client.telephone %}
+                            <div class="mb-3">
+                                <i class="fas fa-phone me-2 text-gray-400"></i>
+                                <span class="text-gray-800">{{ client.telephone }}</span>
+                            </div>
+                        {% endif %}
+                        {% if client.adresse %}
+                            <div class="mb-3">
+                                <i class="fas fa-map-marker-alt me-2 text-gray-400"></i>
+                                <span class="text-gray-800">{{ client.adresse|nl2br }}</span>
+                            </div>
+                        {% endif %}
+                        {% if client.notes %}
+                            <div class="mb-0">
+                                <i class="fas fa-sticky-note me-2 text-gray-400"></i>
+                                <span class="text-gray-800">{{ client.notes }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques des factures -->
+        <div class="col-lg-8">
+            <div class="row">
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total des factures
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ client.factures|length }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Factures payées
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ client.factures|filter(f => f.etat == 'payee')|length }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        En attente
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ client.factures|filter(f => f.etat == 'non_payee')|length }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des factures -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Factures</h6>
+                    <a href="{{ path('app_facture_new', {'client': client.id}) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus fa-sm text-white-50"></i> Nouvelle facture
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if client.factures|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>Date</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for facture in client.factures %}
+                                        <tr>
+                                            <td>{{ facture.numero }}</td>
+                                            <td>{{ facture.date|date('d/m/Y') }}</td>
+                                            <td>{{ facture.montant|number_format(2, ',', ' ') }} €</td>
+                                            <td>
+                                                <span class="badge bg-{{ facture.etat == 'payee' ? 'success' : (facture.etat == 'partielle' ? 'warning' : 'danger') }}">
+                                                    {% if facture.etat == 'payee' %}
+                                                        Payée
+                                                    {% elseif facture.etat == 'partielle' %}
+                                                        Partiellement payée
+                                                    {% else %}
+                                                        Non payée
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ path('app_facture_show', {'id': facture.id}) }}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Aucune facture pour ce client.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

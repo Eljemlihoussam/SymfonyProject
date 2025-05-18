@@ -1,0 +1,136 @@
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>Informations de l'utilisateur
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.username) }}
+                        {{ form_widget(form.username) }}
+                        {{ form_errors(form.username) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.email) }}
+                        {{ form_widget(form.email) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.firstName) }}
+                        {{ form_widget(form.firstName) }}
+                        {{ form_errors(form.firstName) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.lastName) }}
+                        {{ form_widget(form.lastName) }}
+                        {{ form_errors(form.lastName) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.roles) }}
+                        {{ form_widget(form.roles) }}
+                        {{ form_errors(form.roles) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.isActive) }}
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.isActive) }}
+                        </div>
+                        {{ form_errors(form.isActive) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.plainPassword) }}
+                        <div class="input-group">
+                            {{ form_widget(form.plainPassword) }}
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        {{ form_help(form.plainPassword) }}
+                        {{ form_errors(form.plainPassword) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cog me-2"></i>Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <button type="submit" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-save me-2"></i>Enregistrer
+                </button>
+                <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Aide
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <h6 class="alert-heading mb-2">Conseils</h6>
+                    <ul class="mb-0 ps-3">
+                        <li>Le nom d'utilisateur doit être unique</li>
+                        <li>L'email doit être valide et unique</li>
+                        <li>Le mot de passe doit contenir au moins 8 caractères</li>
+                        <li>Vous pouvez sélectionner plusieurs rôles</li>
+                        <li>Un compte inactif ne peut pas se connecter</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ form_end(form) }}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#{{ form.plainPassword.vars.id }}');
+
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+{% endblock %} 

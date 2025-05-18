@@ -1,0 +1,170 @@
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informations du client
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.nom, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'placeholder': 'Nom du client',
+                                    'autofocus': 'autofocus'
+                                }
+                            }) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.email, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'placeholder': 'exemple@email.com'
+                                }
+                            }) }}
+                            {{ form_errors(form.email) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.telephone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.telephone, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'placeholder': '06 12 34 56 78',
+                                    'pattern': '^(?:(?:+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$'
+                                }
+                            }) }}
+                            {{ form_errors(form.telephone) }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.isActive, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="form-check form-switch">
+                                {{ form_widget(form.isActive, {
+                                    'attr': {
+                                        'class': 'form-check-input',
+                                        'role': 'switch'
+                                    }
+                                }) }}
+                                <label class="form-check-label" for="{{ form.isActive.vars.id }}">
+                                    Client actif
+                                </label>
+                            </div>
+                            {{ form_errors(form.isActive) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.adresse, 'Adresse', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.adresse, {
+                            'attr': {
+                                'class': 'form-control',
+                                'placeholder': 'Adresse complète du client',
+                                'rows': 3
+                            }
+                        }) }}
+                        {{ form_errors(form.adresse) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.notes, 'Notes', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.notes, {
+                            'attr': {
+                                'class': 'form-control',
+                                'placeholder': 'Notes additionnelles sur le client',
+                                'rows': 4
+                            }
+                        }) }}
+                        {{ form_errors(form.notes) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{{ button_label|default('Enregistrer') }}
+                        </button>
+                        <a href="{{ path('app_client_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Aide
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-0">
+                        <h6 class="alert-heading mb-2">Conseils :</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Le nom et l'email sont obligatoires</li>
+                            <li>Le téléphone doit être au format français</li>
+                            <li>Les notes peuvent contenir des informations importantes</li>
+                            <li>Un client inactif ne pourra pas passer de commandes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{ form_end(form) }}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation en temps réel
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Formatage automatique du numéro de téléphone
+    const telephoneInput = document.querySelector('#{{ form.telephone.vars.id }}');
+    if (telephoneInput) {
+        telephoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 2) {
+                    value = value.replace(/(\d{2})/, '$1 ');
+                } else if (value.length <= 4) {
+                    value = value.replace(/(\d{2})(\d{2})/, '$1 $2 ');
+                } else if (value.length <= 6) {
+                    value = value.replace(/(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 ');
+                } else {
+                    value = value.replace(/(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+                }
+            }
+            e.target.value = value;
+        });
+    }
+});
+</script>
+{% endblock %} 

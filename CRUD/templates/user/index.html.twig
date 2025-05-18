@@ -1,0 +1,268 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        
+        .card {
+            margin-bottom: 1.5rem;
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        .border-left-primary {
+            border-left: 0.25rem solid #4e73df !important;
+        }
+        .border-left-success {
+            border-left: 0.25rem solid #1cc88a !important;
+        }
+        .border-left-info {
+            border-left: 0.25rem solid #36b9cc !important;
+        }
+        .border-left-warning {
+            border-left: 0.25rem solid #f6c23e !important;
+        }
+        .text-xs {
+            font-size: 0.7rem;
+        }
+        .text-gray-300 {
+            color: #dddfeb !important;
+        }
+        .text-gray-800 {
+            color: #5a5c69 !important;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #f8f9fc;
+            border-bottom: 2px solid #e3e6f0;
+        }
+        .dropdown-menu {
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            border: none;
+        }
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+        }
+        .dropdown-item:hover {
+            background-color: #f8f9fc;
+        }
+        .btn-primary {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2653d4;
+        }
+        .badge {
+            padding: 0.5em 0.75em;
+            font-weight: 500;
+        }
+        .alert {
+            border: none;
+            border-radius: 0.35rem;
+        }
+        .user-card {
+            transition: transform 0.2s;
+        }
+        .user-card:hover {
+            transform: translateY(-5px);
+        }
+        .status-badge {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #28a745;
+        }
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        .role-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des utilisateurs</h1>
+        <a href="{{ path('app_user_new') }}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Nouvel utilisateur
+        </a>
+    </div>
+
+    <!-- Messages flash -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des utilisateurs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Administrateurs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ users|filter(u => 'ROLE_ADMIN' in u.roles)|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Utilisateurs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ users|filter(u => 'ROLE_ADMIN' not in u.roles)|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Clients gérés
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ users|reduce((carry, u) => carry + u.clients|length, 0) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des utilisateurs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Liste des utilisateurs</h6>
+                </div>
+                <div class="card-body">
+                    {% if users|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Email</th>
+                                        <th>Nom d'utilisateur</th>
+                                        <th>Rôle</th>
+                                        <th>Clients</th>
+                                        <th>Créé le</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.fullName }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>{{ user.username }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'ROLE_ADMIN' in user.roles ? 'danger' : 'primary' }}">
+                                                    {{ 'ROLE_ADMIN' in user.roles ? 'Administrateur' : 'Utilisateur' }}
+                                                </span>
+                                            </td>
+                                            <td>{{ user.clients|length }}</td>
+                                            <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-info btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    {% if user != app.user %}
+                                                        <form action="{{ path('app_user_delete', {'id': user.id}) }}" method="post" class="d-inline"
+                                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer l\'utilisateur \"{{ user.fullName }}\" ?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Aucun utilisateur trouvé.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

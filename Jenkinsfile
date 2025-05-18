@@ -1,0 +1,83 @@
+pipeline {
+    agent {
+        docker {
+            image 'eljemlihoussam/php-composer-symfony:8.2'
+            args '-u root'
+        }
+    }
+
+    environment {
+        DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
+        DOCKER_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('CRUD') {
+                    sh '''
+                        composer install --no-interaction --prefer-dist
+                        php bin/console cache:clear || true
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('CRUD') {
+                    script {
+                        docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    }
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}:latest").push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            when {
+                expression { fileExists('deploy.yml') }
+            }
+            steps {
+                dir('CRUD') {
+                    ansiblePlaybook(
+                        playbook: '../deploy.yml',
+                        inventory: '../inventory.ini',
+                        extras: [
+                            "docker_image=${DOCKER_IMAGE}",
+                            "docker_tag=${DOCKER_TAG}"
+                        ]
+                    )
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo '✅ Pipeline terminé avec succès !'
+        }
+        failure {
+            echo '❌ Pipeline échoué !'
+        }
+    }
+}

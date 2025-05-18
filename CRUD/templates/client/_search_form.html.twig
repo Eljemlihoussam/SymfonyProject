@@ -1,0 +1,56 @@
+{# Formulaire de recherche avancée #}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-search me-2"></i>Recherche avancée
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{{ path('app_client_index') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="search_nom" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="search_nom" name="search[nom]" value="{{ app.request.query.get('search')['nom']|default('') }}" placeholder="Rechercher par nom...">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="search_email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="search_email" name="search[email]" value="{{ app.request.query.get('search')['email']|default('') }}" placeholder="Rechercher par email...">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="search_telephone" class="form-label">Téléphone</label>
+                <input type="tel" class="form-control" id="search_telephone" name="search[telephone]" value="{{ app.request.query.get('search')['telephone']|default('') }}" placeholder="Rechercher par téléphone...">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="search_statut" class="form-label">Statut</label>
+                <select class="form-select" id="search_statut" name="search[statut]">
+                    <option value="">Tous les statuts</option>
+                    <option value="1" {{ app.request.query.get('search')['statut']|default('') == '1' ? 'selected' : '' }}>Actif</option>
+                    <option value="0" {{ app.request.query.get('search')['statut']|default('') == '0' ? 'selected' : '' }}>Inactif</option>
+                </select>
+            </div>
+            
+            <div class="col-md-4">
+                <label for="search_date_debut" class="form-label">Date de création (début)</label>
+                <input type="date" class="form-control" id="search_date_debut" name="search[date_debut]" value="{{ app.request.query.get('search')['date_debut']|default('') }}">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="search_date_fin" class="form-label">Date de création (fin)</label>
+                <input type="date" class="form-control" id="search_date_fin" name="search[date_fin]" value="{{ app.request.query.get('search')['date_fin']|default('') }}">
+            </div>
+            
+            <div class="col-12">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ path('app_client_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Réinitialiser
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Rechercher
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div> 

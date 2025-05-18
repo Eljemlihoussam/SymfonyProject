@@ -1,0 +1,27 @@
+<div class="search-box">
+    <form method="get" action="{{ path('app_client_index') }}" class="d-flex gap-2">
+        <div class="input-group">
+            <input type="text" 
+                   name="search" 
+                   class="form-control" 
+                   placeholder="Rechercher un client..." 
+                   value="{{ search_term|default('') }}" 
+                   aria-label="Rechercher un client">
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-search me-2"></i>Rechercher
+            </button>
+            {% if search_term %}
+                <a href="{{ path('app_client_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Effacer
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{% if search_term %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        Résultats de recherche pour "{{ search_term }}"
+    </div>
+{% endif %} 

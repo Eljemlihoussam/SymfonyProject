@@ -1,0 +1,231 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des clients{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des clients</h1>
+        <a href="{{ path('app_client_new') }}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Nouveau client
+        </a>
+    </div>
+
+    <!-- Messages flash -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des clients
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ clients|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Clients actifs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ clients|filter(c => c.isActive)|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Clients inactifs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ clients|filter(c => not c.isActive)|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Factures totales
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ clients|reduce((carry, c) => carry + c.factures|length, 0) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Rechercher un client</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ path('app_client_index') }}" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="Rechercher un client..." 
+                           value="{{ search_term|default('') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des clients -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des clients</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for client in clients %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card border-left-primary shadow h-100">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    {% if client.isActive %}
+                                        <i class="fas fa-circle text-success me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-circle text-danger me-2"></i>
+                                    {% endif %}
+                                    {{ client.nom }}
+                                </h6>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('app_client_show', {'id': client.id}) }}">
+                                                <i class="fas fa-eye me-2"></i> Voir
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('app_client_edit', {'id': client.id}) }}">
+                                                <i class="fas fa-edit me-2"></i> Modifier
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <form action="{{ path('app_client_toggle', {'id': client.id}) }}" method="post">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ client.id) }}">
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="fas fa-{{ client.isActive ? 'ban' : 'check' }} me-2"></i>
+                                                    {{ client.isActive ? 'Désactiver' : 'Activer' }}
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ path('app_client_delete', {'id': client.id}) }}" method="post"
+                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ client.id) }}">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fas fa-trash me-2"></i> Supprimer
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <i class="fas fa-envelope me-2 text-gray-400"></i>
+                                    <span class="text-gray-800">{{ client.email }}</span>
+                                </div>
+                                {% if client.telephone %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-phone me-2 text-gray-400"></i>
+                                        <span class="text-gray-800">{{ client.telephone }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if client.adresse %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-map-marker-alt me-2 text-gray-400"></i>
+                                        <span class="text-gray-800">{{ client.adresse|nl2br }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if client.notes %}
+                                    <div class="mb-0">
+                                        <i class="fas fa-sticky-note me-2 text-gray-400"></i>
+                                        <span class="text-gray-800">{{ client.notes|u.truncate(100, '...') }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-light">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>{{ client.user.fullName }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-file-invoice me-1"></i>{{ client.factures|length }} facture(s)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% if search_term %}
+                                Aucun client ne correspond à votre recherche.
+                            {% else %}
+                                Aucun client trouvé.
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ client.nom }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .form-section h3 {
+        color: #4e73df;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+    }
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    .form-label {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    .current-value {
+        background-color: #e9ecef;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.5rem;
+    }
+    .current-value-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    .current-value-text {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_client_index') }}">Clients</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_client_show', {'id': client.id}) }}">{{ client.nom }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
+
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-2">Modifier {{ client.nom }}</h1>
+                <p class="mb-0">Modifiez les informations du client</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ path('app_client_show', {'id': client.id}) }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-section">
+                            <h3>Informations générales</h3>
+                            <div class="mb-3">
+                                {{ form_label(form.nom, 'Nom du client', {'label_attr': {'class': 'form-label required-field'}}) }}
+                                {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le nom du client'}}) }}
+                                {{ form_errors(form.nom) }}
+                                <div class="form-text">Le nom complet ou la raison sociale du client</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label required-field'}}) }}
+                                {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@email.com'}}) }}
+                                {{ form_errors(form.email) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.telephone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.telephone, {'attr': {'class': 'form-control', 'placeholder': 'Numéro de téléphone'}}) }}
+                                {{ form_errors(form.telephone) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-section">
+                            <h3>Détails supplémentaires</h3>
+                            <div class="mb-3">
+                                {{ form_label(form.adresse, 'Adresse', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.adresse, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Adresse complète'}}) }}
+                                {{ form_errors(form.adresse) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.notes, 'Notes', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.notes, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Informations complémentaires'}}) }}
+                                {{ form_errors(form.notes) }}
+                                <div class="form-text">Informations importantes à noter sur ce client</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(form.isActive, 'Client actif', {'label_attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                                {{ form_errors(form.isActive) }}
+                                <div class="form-text">Activez ou désactivez ce client</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ path('app_client_show', {'id': client.id}) }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %} 

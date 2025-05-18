@@ -1,0 +1,27 @@
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+# Installer Docker + PHP + Extensions Symfony + Composer
+RUN apt-get update && apt-get install -y \
+    docker.io \
+    php \
+    php-cli \
+    php-mbstring \
+    php-xml \
+    php-zip \
+    php-curl \
+    php-dom \
+    php-tokenizer \
+    php-intl \
+    php-mysql \
+    php-bcmath \
+    php-common \
+    git \
+    unzip \
+    curl \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && usermod -aG docker jenkins
+
+# Revenir à l'utilisateur Jenkins
+USER jenkins

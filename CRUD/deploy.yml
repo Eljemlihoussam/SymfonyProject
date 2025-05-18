@@ -1,0 +1,61 @@
+---
+- name: Deploy CRM Symfony Application
+  hosts: webservers
+  become: yes
+  vars:
+    docker_image: "{{ docker_image | default('votre-dockerhub-username/crm-symfony') }}"
+    docker_tag: "{{ docker_tag | default('latest') }}"
+    project_path: "{{ project_path | default('/var/www/crm-symfony') }}"
+
+  tasks:
+    - name: Ensure project directory exists
+      file:
+        path: "{{ project_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: docker-compose.yml
+        dest: "{{ project_path }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Copy .env file
+      copy:
+        src: .env
+        dest: "{{ project_path }}/.env"
+        mode: '0644'
+
+    - name: Pull latest Docker image
+      docker_image:
+        name: "{{ docker_image }}"
+        tag: "{{ docker_tag }}"
+        source: pull
+        force_source: yes
+
+    - name: Stop existing containers
+      docker_compose:
+        project_src: "{{ project_path }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Start containers
+      docker_compose:
+        project_src: "{{ project_path }}"
+        state: present
+        build: no
+        pull: yes
+
+    - name: Wait for services to be ready
+      wait_for:
+        host: localhost
+        port: 80
+        state: started
+        delay: 10
+        timeout: 300
+
+    - name: Clear Symfony cache
+      docker_compose:
+        project_src: "{{ project_path }}"
+        services: php
+        command: bin/console cache:clear 
