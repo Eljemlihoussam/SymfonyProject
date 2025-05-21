@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/client')]
 class ClientController extends AbstractController
@@ -18,7 +19,7 @@ class ClientController extends AbstractController
     public function index(Request $request, ClientRepository $clientRepository): Response
     {
         $user = $this->getUser();
-        $clients = $clientRepository->findBy(['user' => $user]);
+        $clients = $clientRepository->findByUser($user);
 
         return $this->render('client/index.html.twig', [
             'clients' => $clients,
@@ -49,24 +50,18 @@ class ClientController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_client_show', methods: ['GET'])]
+    #[IsGranted('view', 'client')]
     public function show(Client $client): Response
     {
-        if ($client->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce client.');
-        }
-
         return $this->render('client/show.html.twig', [
             'client' => $client,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_client_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('edit', 'client')]
     public function edit(Request $request, Client $client, EntityManagerInterface $entityManager): Response
     {
-        if ($client->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce client.');
-        }
-
         $form = $this->createForm(ClientTypeForm::class, $client);
         $form->handleRequest($request);
 
@@ -84,12 +79,9 @@ class ClientController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_client_delete', methods: ['POST'])]
+    #[IsGranted('delete', 'client')]
     public function delete(Request $request, Client $client, EntityManagerInterface $entityManager): Response
     {
-        if ($client->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce client.');
-        }
-
         if ($this->isCsrfTokenValid('delete'.$client->getId(), $request->request->get('_token'))) {
             $entityManager->remove($client);
             $entityManager->flush();

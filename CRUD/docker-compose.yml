@@ -8,14 +8,17 @@ services:
     volumes:
       - .:/var/www/html
     depends_on:
-      - database
+      - db
       - redis
     environment:
-      DATABASE_URL: mysql://root:root@database:3306/crm?serverVersion=8.0
-      APP_ENV: dev
-      APP_SECRET: ${APP_SECRET}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      - DATABASE_URL=mysql://${DB_USER:-crm}:${DB_PASSWORD:-crm}@db:3306/${DB_NAME:-crm}?serverVersion=8.0
+      - REDIS_URL=redis://redis:6379
+      - APP_ENV=dev
+      - APP_SECRET=${APP_SECRET:-your_secret_here}
+      - DB_NAME=${DB_NAME:-crm}
+      - DB_USER=${DB_USER:-crm}
+      - DB_PASSWORD=${DB_PASSWORD:-crm}
+      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-root}
     ports:
       - "8000:8000"
     networks:
@@ -24,7 +27,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "8084:80"
+      - "8080:80"
     volumes:
       - .:/var/www/html
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
@@ -33,14 +36,15 @@ services:
     networks:
       - crm-network
 
-  database:
+  db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: crm
-      MYSQL_MULTIPLE_DATABASES: crm,crm_test
+      - MYSQL_DATABASE=${DB_NAME:-crm}
+      - MYSQL_USER=${DB_USER:-crm}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-crm}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-root}
     volumes:
-      - mysql-data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
@@ -51,6 +55,8 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
       - crm-network
     restart: always
@@ -60,10 +66,11 @@ services:
     ports:
       - "8081:80"
     environment:
-      PMA_HOST: database
-      MYSQL_ROOT_PASSWORD: root
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=${DB_ROOT_PASSWORD:-root}
     depends_on:
-      - database
+      - db
     networks:
       - crm-network
 
@@ -146,7 +153,8 @@ services:
       - crm-network
 
 volumes:
-  mysql-data:
+  db_data:
+  redis_data:
   prometheus-data:
   grafana-data:
   jenkins-data:

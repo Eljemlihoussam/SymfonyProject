@@ -2,8 +2,8 @@
 
 try {
     $redis = new Redis();
-    $redis->connect('redis', 6379);
-    echo "Connexion à Redis réussie\n";
+    $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+    echo $redis->ping();
     
     // Test d'écriture
     $redis->set('test_key', 'test_value');
