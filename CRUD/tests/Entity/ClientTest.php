@@ -51,7 +51,7 @@ class ClientTest extends TestCase
         $this->assertEmpty($this->client->getFactures());
         
         // Test d'ajout de facture
-        $facture = $this->createMock('App\Entity\Facture');
+        $facture = new \App\Entity\Facture();
         $this->client->addFacture($facture);
         $this->assertCount(1, $this->client->getFactures());
         
