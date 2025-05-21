@@ -22,21 +22,21 @@ class ClientTest extends TestCase
 
     public function testClientProperties(): void
     {
-        $this->client->setNomGerant('Doe');
-        $this->client->setPrenomGerant('John');
-        $this->client->setRaisonSociale('Entreprise Test');
+        $this->client->setNomGerant('khadiri');
+        $this->client->setNom('issam');
+        $this->client->setRaisonSociale('sqli');
         $this->client->setTelephone('0612345678');
         $this->client->setAdresse('123 Rue Test');
-        $this->client->setVille('Paris');
-        $this->client->setPays('France');
+        $this->client->setVille('OUJDA');
+        $this->client->setPays('MOROCCO');
 
-        $this->assertEquals('Doe', $this->client->getNomGerant());
-        $this->assertEquals('John', $this->client->getPrenomGerant());
-        $this->assertEquals('Entreprise Test', $this->client->getRaisonSociale());
+        $this->assertEquals('khadiri', $this->client->getNomGerant());
+        $this->assertEquals('issam', $this->client->getNom());
+        $this->assertEquals('sqli', $this->client->getRaisonSociale());
         $this->assertEquals('0612345678', $this->client->getTelephone());
         $this->assertEquals('123 Rue Test', $this->client->getAdresse());
-        $this->assertEquals('Paris', $this->client->getVille());
-        $this->assertEquals('France', $this->client->getPays());
+        $this->assertEquals('OUJDA', $this->client->getVille());
+        $this->assertEquals('MOROCCO', $this->client->getPays());
     }
 
     public function testClientUser(): void
@@ -51,7 +51,7 @@ class ClientTest extends TestCase
         $this->assertEmpty($this->client->getFactures());
         
         // Test d'ajout de facture
-        $facture = $this->createMock('App\Entity\Facture');
+        $facture = new \App\Entity\Facture();
         $this->client->addFacture($facture);
         $this->assertCount(1, $this->client->getFactures());
         

@@ -1,0 +1,3 @@
+doctrine:
+    dbal:
+        url: 'mysql://root:root@database:3306/crm_test' 
