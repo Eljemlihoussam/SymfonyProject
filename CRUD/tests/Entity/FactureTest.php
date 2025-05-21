@@ -14,6 +14,11 @@ class FactureTest extends TestCase
     protected function setUp(): void
     {
         $this->facture = new Facture();
+        // Initialisation des champs obligatoires pour un état de base valide
+        $this->facture->setNumero('FACT-TEST');
+        $this->facture->setDate(new \DateTimeImmutable());
+        $this->facture->setEtat('Non payée');
+        $this->facture->setClient(new \App\Entity\Client()); 
     }
 
     public function testFactureCreation(): void
