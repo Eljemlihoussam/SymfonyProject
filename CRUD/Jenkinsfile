@@ -25,10 +25,18 @@ pipeline {
             }
         }
 
+        stage('Setup Test Environment') {
+            steps {
+                sh 'docker-compose up -d mysql app'
+            }
+        }
+
         stage('Tests') {
             steps {
-                dir('CRUD') {
-                    sh 'php bin/phpunit'
+                withEnv(['DATABASE_URL=mysql://symfony:symfony@mysql:3306/crm']) {
+                    dir('CRUD') {
+                        sh 'php bin/phpunit'
+                    }
                 }
             }
         }
