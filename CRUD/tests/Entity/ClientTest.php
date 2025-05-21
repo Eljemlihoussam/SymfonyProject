@@ -30,13 +30,13 @@ class ClientTest extends TestCase
         $this->client->setVille('OUJDA');
         $this->client->setPays('MOROCCO');
 
-        $this->assertEquals('Doe', $this->client->getNomGerant());
+        $this->assertEquals('khadiri', $this->client->getNomGerant());
         $this->assertEquals('issam', $this->client->getNom());
-        $this->assertEquals('Entreprise Test', $this->client->getRaisonSociale());
+        $this->assertEquals('sqli', $this->client->getRaisonSociale());
         $this->assertEquals('0612345678', $this->client->getTelephone());
         $this->assertEquals('123 Rue Test', $this->client->getAdresse());
-        $this->assertEquals('Paris', $this->client->getVille());
-        $this->assertEquals('France', $this->client->getPays());
+        $this->assertEquals('OUJDA', $this->client->getVille());
+        $this->assertEquals('MOROCCO', $this->client->getPays());
     }
 
     public function testClientUser(): void
