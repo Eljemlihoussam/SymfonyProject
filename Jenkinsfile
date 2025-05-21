@@ -1,31 +1,51 @@
 pipeline {
     agent {
         docker {
-            image 'eljemlihoussam/php-composer-symfony:8.2'
-            args '-u root'
+            image 'php:8.2-fpm'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     environment {
+        COMPOSER_ALLOW_SUPERUSER = 1
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
         DOCKER_TAG = "${BUILD_NUMBER}"
+        GIT_CREDENTIALS_ID = 'github-token'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Install Dependencies') {
             steps {
-                checkout scm
+                sh 'apt-get update && apt-get install -y git zip unzip'
+                sh 'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer'
+                sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Tests') {
             steps {
-                dir('CRUD') {
-                    sh '''
-                        composer install --no-interaction --prefer-dist
-                        php bin/console cache:clear || true
-                    '''
-                }
+                sh 'php bin/phpunit'
+            }
+        }
+
+        stage('Security Check') {
+            steps {
+                sh 'composer require --dev symfony/security-checker'
+                sh 'php bin/security-checker security:check'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'php bin/console cache:clear'
+                sh 'php bin/console cache:warmup'
+                sh 'php bin/console assets:install'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose up -d --build'
             }
         }
 
@@ -44,6 +64,7 @@ pipeline {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
                         docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").tag('latest')
                         docker.image("${DOCKER_IMAGE}:latest").push()
                     }
                 }
@@ -74,10 +95,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Pipeline terminé avec succès !'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo '❌ Pipeline échoué !'
+            echo 'Pipeline failed!'
         }
     }
 }
