@@ -27,7 +27,9 @@ pipeline {
 
         stage('Setup Test Environment') {
             steps {
-                sh 'docker compose up -d database app'
+                dir('.') {
+                    sh 'docker compose up -d database app'
+                }
             }
         }
 
