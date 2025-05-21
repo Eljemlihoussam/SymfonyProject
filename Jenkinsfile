@@ -26,7 +26,9 @@ pipeline {
 
         stage('Tests') {
             steps {
-                sh 'php bin/phpunit'
+                dir('CRUD') {
+                    sh 'php bin/phpunit'
+                }
             }
         }
 
