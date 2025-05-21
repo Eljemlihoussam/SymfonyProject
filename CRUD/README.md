@@ -21,7 +21,7 @@ Ce projet est un CRM (Customer Relationship Management) développé avec Symfony
 
 ### 1. Cloner le projet
 ```bash
-git clone [URL_DU_REPO]
+git clone https://github.com/Eljemlihoussam/SymfonyProject.git
 cd CRUD
 ```
 
@@ -130,8 +130,8 @@ Ce projet est un CRM développé avec Symfony qui permet aux utilisateurs de gé
 
 1. Cloner le repository :
 ```bash
-git clone [URL_DU_REPO]
-cd [NOM_DU_PROJET]
+git clone https://github.com/Eljemlihoussam/SymfonyProject.git
+cd CRUD
 ```
 
 2. Lancer les conteneurs Docker :
@@ -151,7 +151,7 @@ docker-compose exec php bin/console doctrine:migrations:migrate
 ```
 
 ## Accès aux services
-- Application Symfony : http://localhost:8080
+- Application Symfony : http://localhost:8085
 - PHPMyAdmin : http://localhost:8081
 - Prometheus : http://localhost:9090
 - Grafana : http://localhost:3000 (admin/admin)

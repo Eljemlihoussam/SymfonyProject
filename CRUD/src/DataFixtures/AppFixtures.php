@@ -38,7 +38,7 @@ class AppFixtures extends Fixture
         $user->setPassword($this->passwordHasher->hashPassword($user, 'symfony'));
         $manager->persist($user);
 
-        // Création des clients avec des données plus réalistes
+        
         $clients = [
             [
                 'nom' => 'Ilyes Mazzouei',
@@ -125,31 +125,19 @@ class AppFixtures extends Fixture
             for ($i = 0; $i < $numFactures; $i++) {
                 $facture = new Facture();
                 $facture->setClient($client);
-                
-                // Générer un numéro de facture unique
                 $facture->setNumero('FACT-' . date('Y') . '-' . sprintf('%04d', rand(1, 9999)));
-                
-                // Sélectionner un service aléatoire
                 $service = array_rand($services);
                 $montant = $services[$service];
-                
                 $facture->setMontant($montant);
                 $facture->setDescription($service);
-                
-                // Date aléatoire dans les 6 derniers mois
                 $date = new \DateTimeImmutable();
                 $date = $date->modify('-' . rand(0, 180) . ' days');
                 $facture->setDate($date);
-                
-                // Statut aléatoire
                 $statuts = ['Payée', 'Partiellement payée', 'Non payée'];
                 $facture->setEtat($statuts[array_rand($statuts)]);
-                
-                // Note optionnelle
                 if (rand(0, 1)) {
                     $facture->setNote('Note de suivi pour ' . $service);
                 }
-                
                 $manager->persist($facture);
             }
         }
