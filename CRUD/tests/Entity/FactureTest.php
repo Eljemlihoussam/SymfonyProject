@@ -5,6 +5,7 @@ namespace App\Tests\Entity;
 use App\Entity\Facture;
 use App\Entity\Client;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\Validation;
 
 class FactureTest extends TestCase
 {
@@ -22,19 +23,19 @@ class FactureTest extends TestCase
 
     public function testFactureProperties(): void
     {
-        $date = new \DateTime();
-        
-        $this->facture->setNumero('FACT-2024-001');
-        $this->facture->setDateFacturation($date);
-        $this->facture->setMontant(1500.00);
+        $this->facture->setNumero('FACT-001');
+        $this->facture->setDate(new \DateTimeImmutable());
+        $this->facture->setMontant(100.50);
         $this->facture->setEtat('Payée');
-        $this->facture->setNote('Test de facture');
+        $this->facture->setNote('Note de test');
+        $this->facture->setDescription('Description de test');
 
-        $this->assertEquals('FACT-2024-001', $this->facture->getNumero());
-        $this->assertEquals($date, $this->facture->getDateFacturation());
-        $this->assertEquals(1500.00, $this->facture->getMontant());
+        $this->assertEquals('FACT-001', $this->facture->getNumero());
+        $this->assertInstanceOf(\DateTimeImmutable::class, $this->facture->getDate());
+        $this->assertEquals(100.50, $this->facture->getMontant());
         $this->assertEquals('Payée', $this->facture->getEtat());
-        $this->assertEquals('Test de facture', $this->facture->getNote());
+        $this->assertEquals('Note de test', $this->facture->getNote());
+        $this->assertEquals('Description de test', $this->facture->getDescription());
     }
 
     public function testFactureClient(): void
@@ -59,12 +60,19 @@ class FactureTest extends TestCase
 
     public function testFactureMontantValidation(): void
     {
+        $validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping()
+            ->getValidator();
+
         // Test montant positif
         $this->facture->setMontant(1000.00);
-        $this->assertEquals(1000.00, $this->facture->getMontant());
+        $violations = $validator->validate($this->facture);
+        $this->assertCount(0, $violations);
 
         // Test montant négatif
-        $this->expectException(\InvalidArgumentException::class);
         $this->facture->setMontant(-1000.00);
+        $violations = $validator->validate($this->facture);
+        $this->assertCount(1, $violations);
+        $this->assertEquals('Le montant doit être positif', $violations[0]->getMessage());
     }
 } 
