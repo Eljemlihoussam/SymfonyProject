@@ -1,31 +1,71 @@
 pipeline {
-    agent {
-        docker {
-            image 'eljemlihoussam/php-composer-symfony:8.2'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
+        COMPOSER_ALLOW_SUPERUSER = 1
         DOCKER_IMAGE = 'eljemlihoussam/crm-symfony'
         DOCKER_TAG = "${BUILD_NUMBER}"
+        GIT_CREDENTIALS_ID = 'github-token'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Install Dependencies') {
             steps {
-                checkout scm
+                sh '''
+                    apt-get update && apt-get install -y \
+                    git zip unzip docker-ce-cli \
+                    php php-cli php-curl php-mbstring php-xml php-zip \
+                    php-mysql \
+                    lsb-release ca-certificates apt-transport-https software-properties-common
+                '''
+                sh 'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer'
+                dir('CRUD') {
+                    sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+                }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Test Environment') {
             steps {
-                dir('CRUD') {
-                    sh '''
-                        composer install --no-interaction --prefer-dist
-                        php bin/console cache:clear || true
-                    '''
+                dir('.') {
+                    sh 'docker compose -f docker-compose.yml config --services'
                 }
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                withEnv(['DATABASE_URL=mysql://root:root@database:3306/crm_test', 'TEST_TOKEN=']) {
+                    dir('CRUD') {
+                        sh '''
+                            php bin/console doctrine:database:drop --env=test --force
+                            php bin/console doctrine:database:create --env=test
+                            php bin/console doctrine:schema:create --env=test
+                            php bin/phpunit
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Security Check') {
+            steps {
+                sh 'composer require --dev symfony/security-checker'
+                sh 'php bin/security-checker security:check'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'php bin/console cache:clear'
+                sh 'php bin/console cache:warmup'
+                sh 'php bin/console assets:install'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose up -d --build'
             }
         }
 
@@ -44,6 +84,7 @@ pipeline {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
                         docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").tag('latest')
                         docker.image("${DOCKER_IMAGE}:latest").push()
                     }
                 }
@@ -74,10 +115,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Pipeline terminé avec succès !'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo '❌ Pipeline échoué !'
+            echo 'Pipeline failed!'
         }
     }
 }
