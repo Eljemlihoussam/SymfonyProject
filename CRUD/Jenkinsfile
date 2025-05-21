@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'apt-get update && apt-get install -y git zip unzip docker-cli'
+                sh 'apt-get update && apt-get install -y git zip unzip docker-ce-cli'
                 sh 'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer'
                 dir('CRUD') {
                     sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
