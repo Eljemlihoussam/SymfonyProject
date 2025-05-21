@@ -21,17 +21,19 @@ class UserTest extends TestCase
 
     public function testUserProperties(): void
     {
-        $this->user->setNom('Doe');
-        $this->user->setPrenom('John');
-        $this->user->setEmail('john.doe@example.com');
-        $this->user->setUsername('johndoe');
+        $this->user->setUsername('ilyes');
+        $this->user->setFirstName('mazouzi');
+        $this->user->setLastName('IM');
+        $this->user->setEmail('ilyes@example.com');
         $this->user->setPassword('password123');
+        $this->user->setRoles(['ROLE_USER']);
 
-        $this->assertEquals('Doe', $this->user->getNom());
-        $this->assertEquals('John', $this->user->getPrenom());
-        $this->assertEquals('john.doe@example.com', $this->user->getEmail());
         $this->assertEquals('johndoe', $this->user->getUsername());
+        $this->assertEquals('John', $this->user->getFirstName());
+        $this->assertEquals('Doe', $this->user->getLastName());
+        $this->assertEquals('john.doe@example.com', $this->user->getEmail());
         $this->assertEquals('password123', $this->user->getPassword());
+        $this->assertEquals(['ROLE_USER'], $this->user->getRoles());
     }
 
     public function testUserRoles(): void
