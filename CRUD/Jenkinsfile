@@ -27,7 +27,7 @@ pipeline {
 
         stage('Setup Test Environment') {
             steps {
-                sh 'docker-compose up -d mysql app'
+                sh 'docker compose up -d mysql app'
             }
         }
 
