@@ -28,10 +28,10 @@ class UserTest extends TestCase
         $this->user->setPassword('password123');
         $this->user->setRoles(['ROLE_USER']);
 
-        $this->assertEquals('johndoe', $this->user->getUsername());
-        $this->assertEquals('John', $this->user->getFirstName());
-        $this->assertEquals('Doe', $this->user->getLastName());
-        $this->assertEquals('john.doe@example.com', $this->user->getEmail());
+        $this->assertEquals('ilyes', $this->user->getUsername());
+        $this->assertEquals('mazouzi', $this->user->getFirstName());
+        $this->assertEquals('IM', $this->user->getLastName());
+        $this->assertEquals('ilyes@example.com', $this->user->getEmail());
         $this->assertEquals('password123', $this->user->getPassword());
         $this->assertEquals(['ROLE_USER'], $this->user->getRoles());
     }
