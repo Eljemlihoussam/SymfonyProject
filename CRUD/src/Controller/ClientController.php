@@ -3,58 +3,25 @@
 namespace App\Controller;
 
 use App\Entity\Client;
-use App\Form\ClientType;
+use App\Form\ClientTypeForm;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/clients')]
-#[IsGranted('ROLE_ADMIN')]
+#[Route('/client')]
 class ClientController extends AbstractController
 {
     #[Route('/', name: 'app_client_index', methods: ['GET'])]
     public function index(Request $request, ClientRepository $clientRepository): Response
     {
-        $searchTerm = $request->query->get('search');
         $user = $this->getUser();
-
-        $clients = $clientRepository->createQueryBuilder('c')
-            ->where('c.user = :user')
-            ->setParameter('user', $user);
-
-        if ($searchTerm) {
-            $clients->andWhere('c.nom LIKE :searchTerm OR c.email LIKE :searchTerm OR c.telephone LIKE :searchTerm')
-                ->setParameter('searchTerm', '%' . $searchTerm . '%');
-        }
-
-        $clients = $clients->orderBy('c.nom', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $clients = $clientRepository->findBy(['user' => $user]);
 
         return $this->render('client/index.html.twig', [
             'clients' => $clients,
-            'search_term' => $searchTerm,
-        ]);
-    }
-
-    #[Route('/search', name: 'app_client_search', methods: ['GET'])]
-    public function search(Request $request, ClientRepository $clientRepository): Response
-    {
-        $searchTerm = $request->query->get('q');
-        
-        if (!$searchTerm) {
-            return $this->redirectToRoute('app_client_index');
-        }
-
-        $clients = $clientRepository->search($searchTerm);
-
-        return $this->render('client/index.html.twig', [
-            'clients' => $clients,
-            'search_term' => $searchTerm,
         ]);
     }
 
@@ -64,7 +31,7 @@ class ClientController extends AbstractController
         $client = new Client();
         $client->setUser($this->getUser());
         
-        $form = $this->createForm(ClientType::class, $client);
+        $form = $this->createForm(ClientTypeForm::class, $client);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -72,7 +39,7 @@ class ClientController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Le client a été créé avec succès.');
-            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_client_index');
         }
 
         return $this->render('client/new.html.twig', [
@@ -100,34 +67,20 @@ class ClientController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce client.');
         }
 
-        $form = $this->createForm(ClientType::class, $client);
+        $form = $this->createForm(ClientTypeForm::class, $client);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
             $this->addFlash('success', 'Le client a été modifié avec succès.');
-            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_client_index');
         }
 
         return $this->render('client/edit.html.twig', [
             'client' => $client,
             'form' => $form,
         ]);
-    }
-
-    #[Route('/{id}/toggle', name: 'app_client_toggle', methods: ['POST'])]
-    public function toggle(Client $client, EntityManagerInterface $entityManager): Response
-    {
-        $client->setIsActive(!$client->getIsActive());
-        $entityManager->flush();
-
-        $this->addFlash('success', sprintf(
-            'Le client a été %s avec succès.',
-            $client->getIsActive() ? 'activé' : 'désactivé'
-        ));
-
-        return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}', name: 'app_client_delete', methods: ['POST'])]
@@ -140,10 +93,10 @@ class ClientController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$client->getId(), $request->request->get('_token'))) {
             $entityManager->remove($client);
             $entityManager->flush();
-
+            
             $this->addFlash('success', 'Le client a été supprimé avec succès.');
         }
 
-        return $this->redirectToRoute('app_client_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_client_index');
     }
 } 

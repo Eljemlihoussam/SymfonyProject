@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\FactureRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FactureRepository::class)]
 #[ORM\Table(name: "facture")]
@@ -15,16 +16,31 @@ class Facture
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank(message: 'Le numéro de facture est obligatoire')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le numéro de facture doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le numéro de facture ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $numero = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Assert\NotBlank(message: 'La date de facturation est obligatoire')]
     private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le montant est obligatoire')]
+    #[Assert\Positive(message: 'Le montant doit être positif')]
     private ?float $montant = null;
 
     #[ORM\Column(length: 30)]
+    #[Assert\NotBlank(message: 'L\'état de la facture est obligatoire')]
+    #[Assert\Choice(
+        choices: ['Payée', 'Partiellement payée', 'Non payée'],
+        message: 'L\'état de la facture doit être Payée, Partiellement payée ou Non payée'
+    )]
     private ?string $etat = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

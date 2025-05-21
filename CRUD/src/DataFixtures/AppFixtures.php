@@ -34,9 +34,13 @@ class AppFixtures extends Fixture
         for ($i = 1; $i <= 5; $i++) {
             $client = new Client();
             $client->setNom('Client ' . $i);
+            $client->setNomGerant('Gérant ' . $i);
+            $client->setRaisonSociale('Entreprise Client ' . $i);
             $client->setEmail('client' . $i . '@email.com');
             $client->setTelephone('06 12 34 56 ' . sprintf('%02d', $i));
             $client->setAdresse($i . ' Rue des Exemples');
+            $client->setVille('Ville ' . $i);
+            $client->setPays('France');
             $client->setUser($user);
             $manager->persist($client);
 

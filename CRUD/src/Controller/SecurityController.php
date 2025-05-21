@@ -12,6 +12,9 @@ class SecurityController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        // DEBUG: Vérifier si la fonction login est appelée
+        error_log("Fonction login appelée!");
+
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }

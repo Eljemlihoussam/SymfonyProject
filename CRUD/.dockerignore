@@ -1,11 +1,14 @@
 .git
 .gitignore
-.env
-.env.*
+# .env
+# .env.*
 docker-compose.yml
-docker/
+docker/*
+!docker/nginx/
+!docker/php/
+!docker/prometheus/
 README.md
 var/
-vendor/
+/vendor
 node_modules/
 public/bundles/ 

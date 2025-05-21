@@ -19,6 +19,25 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Controller/MetricsController.php'
+            - '../src/EventSubscriber/MetricsSubscriber.php'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Prometheus\Storage\Redis:
+    #     arguments:
+    #         - host: '%env(REDIS_HOST)%'
+    #           port: '%env(REDIS_PORT)%'
+
+    # Prometheus\CollectorRegistry:
+    #     factory: ['Prometheus\CollectorRegistry', 'getDefault']
+    #     arguments:
+    #         - '@Prometheus\Storage\Redis'
+
+    # App\Service\PrometheusMetrics:
+    #     arguments:
+    #         - '@Prometheus\CollectorRegistry'
+
+    # App\EventSubscriber\MetricsSubscriber:
+    #     tags: ['kernel.event_subscriber']

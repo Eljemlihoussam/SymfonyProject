@@ -62,6 +62,34 @@ class Client
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Facture::class, orphanRemoval: true)]
     private Collection $factures;
 
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom du gérant est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le nom du gérant doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom du gérant ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $nomGerant = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La raison sociale est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'La raison sociale doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'La raison sociale ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $raisonSociale = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La ville est obligatoire')]
+    private ?string $ville = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le pays est obligatoire')]
+    private ?string $pays = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -206,6 +234,50 @@ class Client
             }
         }
 
+        return $this;
+    }
+
+    public function getNomGerant(): ?string
+    {
+        return $this->nomGerant;
+    }
+
+    public function setNomGerant(string $nomGerant): static
+    {
+        $this->nomGerant = $nomGerant;
+        return $this;
+    }
+
+    public function getRaisonSociale(): ?string
+    {
+        return $this->raisonSociale;
+    }
+
+    public function setRaisonSociale(string $raisonSociale): static
+    {
+        $this->raisonSociale = $raisonSociale;
+        return $this;
+    }
+
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
+
+    public function setVille(string $ville): static
+    {
+        $this->ville = $ville;
+        return $this;
+    }
+
+    public function getPays(): ?string
+    {
+        return $this->pays;
+    }
+
+    public function setPays(string $pays): static
+    {
+        $this->pays = $pays;
         return $this;
     }
 } 
