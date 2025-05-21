@@ -22,16 +22,16 @@ class ClientTest extends TestCase
 
     public function testClientProperties(): void
     {
-        $this->client->setNomGerant('Doe');
+        $this->client->setNomGerant('khadiri');
         $this->client->setNom('issam');
-        $this->client->setRaisonSociale('Entreprise Test');
+        $this->client->setRaisonSociale('sqli');
         $this->client->setTelephone('0612345678');
         $this->client->setAdresse('123 Rue Test');
-        $this->client->setVille('Paris');
-        $this->client->setPays('France');
+        $this->client->setVille('OUJDA');
+        $this->client->setPays('MOROCCO');
 
         $this->assertEquals('Doe', $this->client->getNomGerant());
-        $this->assertEquals('John', $this->client->getNom());
+        $this->assertEquals('issam', $this->client->getNom());
         $this->assertEquals('Entreprise Test', $this->client->getRaisonSociale());
         $this->assertEquals('0612345678', $this->client->getTelephone());
         $this->assertEquals('123 Rue Test', $this->client->getAdresse());
