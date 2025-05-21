@@ -30,8 +30,8 @@ class ClientControllerTest extends WebTestCase
         $user->setUsername('testuser');
         $user->setPassword('password');
         $user->setEmail('test@example.com');
-        $user->setNom('Test');
-        $user->setPrenom('User');
+        $user->setLastName('Test');
+        $user->setFirstName('User');
         
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -45,7 +45,6 @@ class ClientControllerTest extends WebTestCase
 
         $form = $crawler->selectButton('Enregistrer')->form();
         $form['client[nomGerant]'] = 'Doe';
-        $form['client[prenomGerant]'] = 'John';
         $form['client[raisonSociale]'] = 'Test Company';
         $form['client[telephone]'] = '0612345678';
         $form['client[adresse]'] = '123 Test Street';
@@ -63,8 +62,8 @@ class ClientControllerTest extends WebTestCase
         $user->setUsername('testuser2');
         $user->setPassword('password');
         $user->setEmail('test2@example.com');
-        $user->setNom('Test');
-        $user->setPrenom('User');
+        $user->setLastName('Test');
+        $user->setFirstName('User');
         
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -72,7 +71,6 @@ class ClientControllerTest extends WebTestCase
         // Créer un client de test
         $client = new Client();
         $client->setNomGerant('Doe');
-        $client->setPrenomGerant('John');
         $client->setRaisonSociale('Test Company');
         $client->setTelephone('0612345678');
         $client->setAdresse('123 Test Street');
@@ -104,8 +102,8 @@ class ClientControllerTest extends WebTestCase
         $user->setUsername('testuser3');
         $user->setPassword('password');
         $user->setEmail('test3@example.com');
-        $user->setNom('Test');
-        $user->setPrenom('User');
+        $user->setLastName('Test');
+        $user->setFirstName('User');
         
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -113,7 +111,6 @@ class ClientControllerTest extends WebTestCase
         // Créer un client de test
         $client = new Client();
         $client->setNomGerant('Doe');
-        $client->setPrenomGerant('John');
         $client->setRaisonSociale('Test Company');
         $client->setTelephone('0612345678');
         $client->setAdresse('123 Test Street');
