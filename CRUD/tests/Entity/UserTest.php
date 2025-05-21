@@ -49,7 +49,7 @@ class UserTest extends TestCase
         $this->assertEmpty($this->user->getClients());
         
         // Test d'ajout de client
-        $client = $this->createMock('App\Entity\Client');
+        $client = new \App\Entity\Client();
         $this->user->addClient($client);
         $this->assertCount(1, $this->user->getClients());
         
