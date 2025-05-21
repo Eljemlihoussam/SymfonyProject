@@ -1,0 +1,142 @@
+# Explication de l'architecture et des services du projet CRM Symfony
+
+# Ce fichier explique les différents composants mis en place dans le projet et leur rôle.
+
+# Architecture générale :
+# Le projet utilise Docker Compose pour orchestrer plusieurs conteneurs, chacun exécutant un service spécifique.
+# Cela permet d'isoler les environnements et de simplifier le déploiement.
+
+# 1. Docker Compose (`docker-compose.yml`):
+# C'est le fichier principal qui définit et configure tous les services (conteneurs), les réseaux et les volumes.
+# Il décrit comment les différents composants de l'application interagissent entre eux.
+# Configuration:
+# - `version`: Spécifie la version du format de fichier Docker Compose.
+# - `services`: Définit chaque conteneur en spécifiant l'image Docker, les ports, les volumes, les dépendances, les variables d'environnement, etc.
+# - `volumes`: Définit les volumes persistants pour stocker les données (base de données, Prometheus, Grafana, Jenkins, Redis) afin qu'elles ne soient pas perdues lorsque les conteneurs sont arrêtés ou supprimés.
+# - `networks`: Définit les réseaux personnalisés pour permettre aux conteneurs de communiquer entre eux en utilisant leurs noms de service.
+
+# 2. Application Symfony (`service: app`):
+# C'est le cœur de l'application CRM, développée avec le framework Symfony.
+# Elle est exécutée avec PHP-FPM dans un conteneur Docker.
+# Configuration:
+# - `build`: Spécifie le Dockerfile (`docker/php/Dockerfile`) à utiliser pour construire l'image de l'application.
+# - `volumes`: Monte le répertoire du projet (`./`) dans le conteneur (`/var/www/html`).
+# - `depends_on`: S'assure que la base de données et Redis sont démarrés avant l'application.
+# - `environment`: Définit les variables d'environnement nécessaires à l'application (connexion BD, Redis, secrets).
+# - `ports`: Expose le port 8000 du conteneur à l'extérieur (bien que le trafic HTTP soit géré par Nginx en production).
+# - `networks`: Connecte l'application au réseau `crm-network`.
+# Rôle: Gérer la logique métier, les contrôleurs, les services, les entités (Utilisateurs, Clients, Factures) et fournir l'API pour les métriques Prometheus.
+
+# 3. Base de données MySQL (`service: database`):
+# Stocke toutes les données de l'application (utilisateurs, clients, factures).
+# Configuration:
+# - `image`: Utilise l'image officielle MySQL version 8.0.
+# - `environment`: Configure les identifiants et le nom de la base de données.
+# - `volumes`: Utilise un volume persistant (`mysql-data`) pour stocker les données de la base de données.
+# - `ports`: Expose le port MySQL standard (3306).
+# - `networks`: Connecte la base de données au réseau `crm-network`.
+# Rôle: Fournir une base de données relationnelle fiable pour le stockage des données de l'application.
+
+# 4. Serveur Web Nginx (`service: nginx`):
+# Sert les fichiers statiques et redirige les requêtes PHP vers le conteneur de l'application (PHP-FPM).
+# Configuration:
+# - `image`: Utilise l'image légère Nginx Alpine.
+# - `ports`: Mappe le port 80 du conteneur Nginx sur le port 8084 de la machine hôte pour l'accès web.
+# - `volumes`: Monte le répertoire du projet et le fichier de configuration Nginx personnalisé.
+# - `depends_on`: S'assure que l'application est démarrée avant Nginx.
+# - `networks`: Connecte Nginx au réseau `crm-network`.
+# Rôle: Gérer les requêtes HTTP entrantes, servir l'application Symfony et les fichiers statiques.
+
+# 5. PhpMyAdmin (`service: phpmyadmin`):
+# Interface web pour gérer la base de données MySQL.
+# Configuration:
+# - `image`: Utilise l'image officielle PhpMyAdmin.
+# - `ports`: Mappe le port 80 du conteneur PhpMyAdmin sur le port 8081 de la machine hôte.
+# - `environment`: Configure la connexion à la base de données (`PMA_HOST`).
+# - `depends_on`: S'assure que la base de données est démarrée.
+# - `networks`: Connecte PhpMyAdmin au réseau `crm-network`.
+# Rôle: Fournir une interface graphique conviviale pour administrer la base de données MySQL.
+
+# 6. Mailpit (`service: mailer`):
+# Un serveur SMTP factice et une interface web pour tester l'envoi d'e-mails en développement.
+# Configuration:
+# - `image`: Utilise l'image axllent/mailpit.
+# - `ports`: Expose les ports SMTP (1025) et HTTP (8025).
+# - `networks`: Connecte Mailpit au réseau `crm-network`.
+# Rôle: Intercepter les e-mails envoyés par l'application en environnement de développement pour inspection.
+
+# 7. Redis (`service: redis`):
+# Un serveur de données structurées en mémoire, utilisé ici comme backend pour le client Prometheus PHP afin de stocker temporairement les métriques.
+# Configuration:
+# - `image`: Utilise l'image légère Redis Alpine.
+# - `command`: Lance Redis en mode append-only pour la persistance minimale.
+# - `volumes`: Utilise un volume persistant (`redis_data`) pour les données Redis.
+# - `healthcheck`: Vérifie si Redis est opérationnel.
+# - `restart`: Redémarre toujours le conteneur en cas d'échec.
+# - `ports`: Expose le port standard Redis (6379).
+# - `networks`: Connecte Redis au réseau `crm-network`.
+# Rôle: Stocker temporairement les métriques collectées par l'application Symfony avant que Prometheus ne les scrape.
+
+# 8. Prometheus (`service: prometheus`):
+# Système de monitoring et d'alerte qui collecte les métriques de diverses sources (targets).
+# Configuration:
+# - `image`: Utilise l'image officielle Prometheus.
+# - `volumes`: Monte le répertoire de configuration Prometheus local (`./docker/prometheus/`) et utilise un volume persistant pour les données TSDB (`prometheus_data`).
+# - `command`: Spécifie le fichier de configuration à utiliser et le chemin de stockage des données.
+# - `ports`: Expose le port web de Prometheus (9090).
+# - `depends_on`: S'assure que les sources de métriques (node-exporter, app, jenkins) sont démarrées.
+# - `networks`: Connecte Prometheus au réseau `crm-network`.
+# Rôle: Scraper les métriques de tous les services configurés (application Symfony, Node Exporter, Jenkins, cAdvisor, Nginx, MySQL) et les stocker.
+
+# 9. Grafana (`service: grafana`):
+# Plateforme open-source d'analyse et de visualisation qui permet de créer des tableaux de bord à partir de diverses sources de données (dont Prometheus).
+# Configuration:
+# - `image`: Utilise l'image officielle Grafana.
+# - `volumes`: Monte le répertoire de provisioning local (`./docker/grafana/provisioning/`) et utilise un volume persistant pour les données Grafana (`grafana_data`). Le provisioning permet de configurer automatiquement les sources de données et les tableaux de bord au démarrage.
+# - `environment`: Configure l'utilisateur et le mot de passe admin par défaut et désactive l'inscription.
+# - `ports`: Expose le port web de Grafana (3000).
+# - `depends_on`: S'assure que Prometheus est démarré.
+# - `networks`: Connecte Grafana au réseau `crm-network`.
+# Rôle: Visualiser les métriques collectées par Prometheus à travers des tableaux de bord interactifs.
+
+# 10. Node Exporter (`service: node-exporter`):
+# Collecteur de métriques système pour Linux/Unix, utilisé pour exposer les métriques de la machine hôte ou du nœud Docker (CPU, mémoire, disque, réseau).
+# Configuration:
+# - `image`: Utilise l'image officielle Node Exporter.
+# - `ports`: Expose le port 9100.
+# - `volumes`: Monte des points du système de fichiers hôte en lecture seule pour accéder aux métriques système.
+# - `command`: Configure les chemins et exclut certains systèmes de fichiers.
+# - `networks`: Connecte Node Exporter au réseau `crm-network`.
+# Rôle: Fournir des métriques au niveau du système d'exploitation à Prometheus.
+
+# 11. Jenkins (`service: jenkins`):
+# Serveur d'automatisation open-source utilisé ici pour mettre en place une chaîne d'intégration continue (CI) et de déploiement continu (CD).
+# Configuration:
+# - `image`: Utilise l'image officielle Jenkins LTS avec JDK17.
+# - `privileged: true`: Nécessaire pour permettre à Jenkins d'interagir avec le démon Docker de l'hôte (via le montage du socket Docker).
+# - `user: root`: Exécute Jenkins en tant que root dans le conteneur (pour l'accès au socket Docker).
+# - `ports`: Expose les ports web (8080) et agent (50000).
+# - `volumes`: Utilise un volume persistant (`jenkins-data`) pour les données de Jenkins et monte le socket Docker.
+# - `environment`: Configure l'assistant de configuration initial.
+# - `networks`: Connecte Jenkins au réseau `crm-network`.
+# Rôle: Automatiser les étapes de build, test, analyse de sécurité, création d'images Docker, publication et déploiement du projet Symfony.
+
+# 12. cAdvisor (`service: cadvisor`):
+# Collecteur de métriques de performance et d'utilisation des ressources (CPU, mémoire, réseau, système de fichiers) pour les conteneurs Docker.
+# Configuration:
+# - `image`: Utilise l'image officielle cAdvisor de Google.
+# - `ports`: Expose le port web de cAdvisor (8080), mappé sur 8082 localement.
+# - `volumes`: Monte divers répertoires du système hôte nécessaires à la collecte des métriques des conteneurs.
+# - `depends_on`: Dépendance typique sur Redis (bien que pas strictement nécessaire pour la collecte des métriques de base).
+# - `networks`: Connecte cAdvisor au réseau `crm-network`.
+# Rôle: Fournir des métriques détaillées sur l'état et la performance de chaque conteneur Docker à Prometheus.
+
+# Rôle des métriques et du monitoring :
+# Les métriques sont des mesures numériques qui représentent l'état de votre application et de votre infrastructure (par exemple, nombre de requêtes HTTP, latence des requêtes, utilisation CPU, mémoire, nombre d'erreurs).
+# Le monitoring consiste à collecter, agréger et visualiser ces métriques pour comprendre le comportement du système, identifier les problèmes, suivre les performances et prendre des décisions éclairées.
+# Dans ce projet :
+# - Les métriques de l'application Symfony (`/metrics`): Fournissent des informations spécifiques à l'application (nombre de clients, factures, requêtes par route, etc.). Elles sont collectées via le service `PrometheusMetrics` et l'EventSubscriber `MetricsSubscriber`, stockées temporairement dans Redis, puis scrapées par Prometheus.
+# - Les métriques système (Node Exporter): Donnent une vue de l'utilisation des ressources au niveau du système d'exploitation.
+# - Les métriques conteneurs (cAdvisor): Fournissent des détails sur la performance et l'utilisation des ressources de chaque conteneur Docker individuellement.
+# - Les métriques Jenkins: Suivent les performances et les résultats des pipelines CI/CD.
+# Toutes ces métriques sont stockées dans Prometheus et visualisées dans Grafana, permettant de surveiller l'état général de l'application et de son infrastructure Dockerisée en temps réel. 

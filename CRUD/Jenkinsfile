@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'php:8.2-fpm'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     environment {
         COMPOSER_ALLOW_SUPERUSER = 1
@@ -16,9 +11,11 @@ pipeline {
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'apt-get update && apt-get install -y git zip unzip'
+                sh 'apt-get update && apt-get install -y git zip unzip docker-cli'
                 sh 'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer'
-                sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+                dir('CRUD') {
+                    sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+                }
             }
         }
 

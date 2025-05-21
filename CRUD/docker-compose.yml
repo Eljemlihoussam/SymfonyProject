@@ -112,7 +112,9 @@ services:
       - crm-network
 
   jenkins:
-    image: jenkins/jenkins:lts-jdk17
+    build:
+      context: .
+      dockerfile: docker/jenkins/Dockerfile
     user: root
     ports:
       - "8085:8080"
@@ -122,6 +124,22 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=true
+    networks:
+      - crm-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8082:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /dev/disk/:/dev/disk/:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      - redis
     networks:
       - crm-network
 

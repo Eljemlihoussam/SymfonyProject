@@ -3,6 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Service\PrometheusMetrics;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -10,38 +11,47 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class MetricsSubscriber implements EventSubscriberInterface
 {
     private PrometheusMetrics $metrics;
-    private array $startTimes = [];
+    private EntityManagerInterface $entityManager;
+    private float $startTime;
 
-    public function __construct(PrometheusMetrics $metrics)
+    public function __construct(PrometheusMetrics $metrics, EntityManagerInterface $entityManager)
     {
         $this->metrics = $metrics;
+        $this->entityManager = $entityManager;
+        $this->startTime = microtime(true);
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => 'onKernelRequest',
             KernelEvents::TERMINATE => 'onKernelTerminate',
         ];
     }
 
-    public function onKernelRequest(): void
-    {
-        $this->startTimes[] = microtime(true);
-    }
-
     public function onKernelTerminate(TerminateEvent $event): void
     {
-        $startTime = array_pop($this->startTimes);
-        if ($startTime === null) {
-            return;
-        }
-
-        $duration = microtime(true) - $startTime;
-        $this->metrics->recordRequest(
-            $event->getRequest(),
-            $event->getResponse(),
+        $request = $event->getRequest();
+        $response = $event->getResponse();
+        
+        // Enregistrer les métriques HTTP
+        $duration = microtime(true) - $this->startTime;
+        $this->metrics->recordHttpRequest(
+            $request->getMethod(),
+            $request->attributes->get('_route', 'unknown'),
+            $response->getStatusCode(),
             $duration
         );
+
+        // Mettre à jour les compteurs d'entités
+        $this->updateEntityCounts();
+    }
+
+    private function updateEntityCounts(): void
+    {
+        $clientsCount = $this->entityManager->getRepository('App\Entity\Client')->count([]);
+        $facturesCount = $this->entityManager->getRepository('App\Entity\Facture')->count([]);
+        $usersCount = $this->entityManager->getRepository('App\Entity\User')->count([]);
+
+        $this->metrics->updateEntityCounts($clientsCount, $facturesCount, $usersCount);
     }
 } 

@@ -2,28 +2,28 @@
 
 namespace App\Controller;
 
-use Prometheus\CollectorRegistry;
+use App\Service\PrometheusMetrics;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class MetricsController extends AbstractController
 {
-    private CollectorRegistry $registry;
+    private PrometheusMetrics $metrics;
 
-    public function __construct(CollectorRegistry $registry)
+    public function __construct(PrometheusMetrics $metrics)
     {
-        $this->registry = $registry;
+        $this->metrics = $metrics;
     }
 
-    #[Route('/metrics', name: 'app_metrics', methods: ['GET'])]
+    #[Route('/metrics', name: 'app_metrics')]
     public function index(): Response
     {
         $renderer = new \Prometheus\RenderTextFormat();
-        $result = $renderer->render($this->registry->getMetricFamilySamples());
-
-        return new Response($result, 200, [
-            'Content-Type' => 'text/plain; version=0.0.4',
-        ]);
+        return new Response(
+            $renderer->render($this->metrics->getRegistry()->getMetricFamilySamples()),
+            Response::HTTP_OK,
+            ['Content-Type' => 'text/plain; version=0.0.4']
+        );
     }
 } 
