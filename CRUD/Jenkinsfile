@@ -35,7 +35,7 @@ pipeline {
 
         stage('Tests') {
             steps {
-                withEnv(['DATABASE_URL=mysql://symfony:symfony@mysql:3306/crm']) {
+                withEnv(['DATABASE_URL=mysql://symfony:symfony@database:3306/crm']) {
                     dir('CRUD') {
                         sh 'php bin/phpunit'
                     }
