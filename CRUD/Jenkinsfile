@@ -35,9 +35,13 @@ pipeline {
 
         stage('Tests') {
             steps {
-                withEnv(['DATABASE_URL=mysql://root:root@database:3306/crm']) {
+                withEnv(['DATABASE_URL=mysql://root:root@database:3306/crm_test']) {
                     dir('CRUD') {
-                        sh 'php bin/phpunit'
+                        sh '''
+                            php bin/console doctrine:database:create --env=test
+                            php bin/console doctrine:schema:create --env=test
+                            php bin/phpunit
+                        '''
                     }
                 }
             }
